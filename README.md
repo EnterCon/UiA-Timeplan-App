@@ -1,6 +1,16 @@
 # UiA-Timeplan-App
 UiA's timeplan på web. Mobiltilpasset og bygget i Meteor slik at det lett kan tilpasses flere plattformer.
 
+# Requirements
+
+* You need Meteor 1.1.^
+
+# Usage
+
+```sh
+meteor
+```
+
 # License
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">
 <img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" />
