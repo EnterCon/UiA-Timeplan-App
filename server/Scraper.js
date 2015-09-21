@@ -29,21 +29,19 @@ Scraper = (function () {
       if(programme !== null && programme !== undefined) {
         console.log(programme);
         this.reqData.form.dlObject = programme.id;
-        console.log("scrape > scraping for " + id + ":" + programme.name);
         request.post(this.reqData, function(err, response, body) {
-          self.parseProgrammeSchedule(err, body, self);
+          self.parseProgrammeSchedule(err, body, id);
         });
       } else {
         console.log("scrape > couldn't find programme by that ID");
       }
     } else {
       console.log("scrape > getting schedules for all programmes");
-      var exParseProgrammes = function(err, response, body) {
-        self.parseProgrammeSchedule(err, body, self);
-      };
       for(var n = 0; n < this.programmeOptions.length; n++) {
         this.reqData.form.dlObject = this.programmeOptions[n].id;
-        request.post(this.reqData, exParseProgrammes);
+        request.post(this.reqData, function(err, response, body) {
+          self.parseProgrammeSchedule(err, body, this.programmeOptions[n].id);
+        }); // jshint ignore:line
       }
     }
   };
@@ -77,32 +75,82 @@ Scraper = (function () {
     }
   };
 
-  _scraper.prototype.parseProgrammeSchedule = function(err, body, self) {
-    if(err) console.log("scheduleRequestResult > error happened");
+  _scraper.prototype.parseProgrammeSchedule = function(err, body, id) {
+    if(err) console.log("parseProgrammeSchedule > error happened");
     else {
-      var programme = {id: "", name: "", schedule: []};
+      var programme = {id: id, name: "", schedule: []};
       $ = cheerio.load(body);
       programme.name = sanitize($(".title").text());
-      console.log("scheduleRequestResult > parsing schedule for " + programme.name);
+      console.log("parseProgrammeSchedule > parsing schedule for " + id + ":" + programme.name);
+      $("table").each(function(i, elem) {
+        var dayElements = $(this).find("tr.tr2");
+        if(dayElements !== null && dayElements.length > 0) {
+          var days = [];
+          var week = {weekNumber: 0, year: "", days : []};
+          var weekStr = $(this).find("td.td1").text();
+          week.weekNumber = parseWeekNumber(weekStr);
+          week.year = parseYear(weekStr);
+          dayElements.each(function(i, elem) {
+            var activity = {courses : [], rooms: [], lecturer: "", notice: "", start: "", end: ""};
+          });
+        }
+      });
+
     }
   };
 
 
   _scraper.prototype.getScheduleURL = function() {
-    var autumnURL = "http://timeplan.uia.no/swsuiah/public/no/default.aspx";
-    var springURL = "http://timeplan.uia.no/swsuiav/public/no/default.aspx";
-
     var now         = new Date();
     var autumnStart = new Date(now.getFullYear(), 6, 20);
     var springStart = new Date(now.getFullYear(), 12, 16);
     var range       = moment().range(autumnStart, springStart);
     if(range.contains(now)) {
-      return autumnURL;
+      return "http://timeplan.uia.no/swsuiah/public/no/default.aspx";
     } else {
-      return springURL;
+      return "http://timeplan.uia.no/swsuiav/public/no/default.aspx";
     }
   };
 
 
   return _scraper;
 })();
+
+
+var parseWeekNumber = function(str) {
+  var matches = str.match(/(?:uke.+)\b([0-9]|[1-4][0-9]|5[0-2])\b/i);
+  if (matches === null || matches.length === 0) return 0;
+  else {
+    return matches[0];
+  }
+};
+
+var parseYear = function(str) {
+  var matches = str.match(/(20)\d{2}/i);
+  if (matches === null || matches.length === 0) return 0;
+  else {
+    return matches[0];
+  }
+};
+
+var parseRooms = function(str) {
+  var rooms = str.split(',');
+  return rooms;
+};
+
+var parseCourses = function(str) {
+  var re = /(([A-Z]{2}|[A-Z]{3})(-)?\d{3})/i;
+  match = re.exec(str);
+  var matches = [];
+  while (match !== null) {
+    // matched text: match[0]
+    // match start: match.index
+    // capturing group n: match[n]
+    matches.push(match);
+    match = re.exec(str);
+  }
+};
+
+var parseTimespan = function(str) {
+
+};
