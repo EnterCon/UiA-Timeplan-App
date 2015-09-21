@@ -7,12 +7,7 @@
 meteor-platform
 autopublish
 insecure
-iron:router
 fourseven:scss@2.0.0
-meteoric:ionic-sass
-meteoric:ionicons-sass
-meteoric:ionic
-pcel:loading
 percolate:synced-cron
 aldeed:collection2
 meteorhacks:npm
@@ -20,3 +15,5 @@ meteorhacks:npm
 
 npm-container
 kevbuk:moment-range
+angular
+twbs:bootstrap

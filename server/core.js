@@ -94,5 +94,5 @@ SyncedCron.add({
 
 Meteor.startup(function () {
   //SyncedCron.start();
-  scrapeProgrammeSchedules();
+  //scrapeProgrammeSchedules();
 });

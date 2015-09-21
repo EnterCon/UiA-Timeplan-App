@@ -1,51 +1,7 @@
-.loading-message {
-  font-family: sans-serif;
-  font-size: 25px;
-  font-weight: 300;
-  color: #fff;
+body {
+  padding-top: 25px;
 }
-
-.pg-loading-logo-header {
-    height: 15%;
-}
-
-/* Change default spinner's CSS to #fff */
-.sk-spinner-rotating-plane.sk-spinner {
-    background-color: #fff;
-}
-
-.sk-spinner-double-bounce .sk-double-bounce1, .sk-spinner-double-bounce .sk-double-bounce2 {
-    background-color: #fff;
-}
-
-.sk-spinner-wave div {
-    background-color: #fff;
-}
-
-.sk-spinner-wandering-cubes .sk-cube1, .sk-spinner-wandering-cubes .sk-cube2 {
-    background-color: #fff;
-}
-
-.sk-spinner-pulse.sk-spinner {
-    background-color: #fff;
-}
-
-.sk-spinner-chasing-dots .sk-dot1, .sk-spinner-chasing-dots .sk-dot2 {
-    background-color: #fff;
-}
-
-.sk-spinner-three-bounce div {
-    background-color: #fff;
-}
-
-.sk-spinner-circle .sk-circle:before {
-    background-color: #fff;
-}
-
-.sk-spinner-cube-grid .sk-cube {
-    background: #fff;
-}
-
-.sk-spinner-fading-circle .sk-circle:before {
-    background-color: #fff;
+.content {
+  padding: 40px 15px;
+  text-align: center;
 }
