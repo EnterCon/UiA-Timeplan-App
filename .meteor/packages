@@ -13,7 +13,6 @@ meteoric:ionic-sass
 meteoric:ionicons-sass
 meteoric:ionic
 pcel:loading
-dandv:http-more
 percolate:synced-cron
 aldeed:collection2
 meteorhacks:npm
