@@ -4,21 +4,20 @@ Meteor.startup(function () {
 
   var millisecondsToWait = 2000;
   setTimeout(function() {
-      scraper.scrape("#SPLUS83F11B");
+      scraper.scrape();
   }, millisecondsToWait);
 
   SyncedCron.add({
     name: 'Gather programmes & schedules',
     schedule: function(parser) {
       // parser is a later.parse object
-      return parser.text('every 5 seconds');
+      return parser.text('every 12 hours');
     },
     job: function() {
-
-
+      scraper.scrape();
     }
   });
 
-  //SyncedCron.start();
+  SyncedCron.start();
 
 });

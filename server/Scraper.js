@@ -18,9 +18,10 @@ Scraper = (function () {
   _scraper.prototype.scrape = function(id) {
     console.log("scrape > starting");
     var self = this;
-    if(id !== "" && id !== null) {
+    var programmesToSync = [];
+    if(id !== "" && id !== null && id !== undefined) {
       var programme;
-      for(var i = 0; i < this.programmeOptions.length; i++) {
+      for(i = 0; i < this.programmeOptions.length; i++) {
         if(this.programmeOptions[i].id === id) {
           programme = this.programmeOptions[i];
           break;
@@ -29,18 +30,49 @@ Scraper = (function () {
       if(programme !== null && programme !== undefined) {
         this.reqData.form.dlObject = programme.id;
         request.post(this.reqData, function(err, response, body) {
-          self.parseProgrammeSchedule(err, body, id);
+          programmesToSync.push(self.parseProgrammeSchedule(err, body, id));
         });
       } else {
         console.log("scrape > couldn't find programme by that ID");
       }
     } else {
       console.log("scrape > getting schedules for all programmes");
-      for(var n = 0; n < this.programmeOptions.length; n++) {
-        this.reqData.form.dlObject = this.programmeOptions[n].id;
+      for(i = 0; n < this.programmeOptions.length; i++) {
+        this.reqData.form.dlObject = this.programmeOptions[i].id;
         request.post(this.reqData, function(err, response, body) {
-          self.parseProgrammeSchedule(err, body, this.programmeOptions[n].id);
+          programmesToSync.push(self.parseProgrammeSchedule(err, body, this.programmeOptions[n].id));
         }); // jshint ignore:line
+      }
+    }
+    var synced = self.syncProgrammes(programmesToSync);
+    var stats = {tried : programmesToSync.length, synced: synced};
+    return stats;
+  };
+
+
+  _scraper.prototype.syncProgrammes = function(programmesToSync) {
+    if(this.programmes.length < 1) {
+      this.programmes = programmesToSync;
+      return programmesToSync.length;
+    }
+    else {
+      var syncedTotal = 0;
+      for(i = 0; i < programmesToSync.length; i++) {
+        synced = 0;
+        for(n = 0; n < this.programmes.length; n++) {
+          if(programmesToSync[i].id === programmes[n].id) {
+            if(JSON.stringify(programmesToSync[i]) === JSON.stringify(this.programmes[n])) {
+              synced = 1;
+              break;
+            } else {
+              synced = 1;
+              this.programmes[n] = programmesToSync[i];
+            }
+          } else {
+            continue;
+          }
+        }
+        syncedTotal += synced;
       }
     }
   };
@@ -121,7 +153,9 @@ Scraper = (function () {
           programme.schedule.push(week);
         }
       });
+      return programme;
     }
+    return undefined;
   };
 
 
