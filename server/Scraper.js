@@ -10,7 +10,7 @@ Scraper = (function () {
 
     var self = this;
     request(this.reqData, function(err, response, body) {
-      self.parseProgrammes(err, body, self);
+      self.parseProgrammeOptions(err, body, self);
     });
 
   };
@@ -27,7 +27,6 @@ Scraper = (function () {
         }
       }
       if(programme !== null && programme !== undefined) {
-        console.log(programme);
         this.reqData.form.dlObject = programme.id;
         request.post(this.reqData, function(err, response, body) {
           self.parseProgrammeSchedule(err, body, id);
@@ -47,7 +46,7 @@ Scraper = (function () {
   };
 
 
-  _scraper.prototype.parseProgrammes = function (err, body, self) {
+  _scraper.prototype.parseProgrammeOptions = function (err, body, self) {
     if(err)
       console.log("parseProgrammes > couldn't get programmes");
     else {
@@ -83,6 +82,8 @@ Scraper = (function () {
       programme.name = sanitize($(".title").text());
       console.log("parseProgrammeSchedule > parsing schedule for " + id + ":" + programme.name);
       $("table").each(function(i, elem) {
+        console.log("parseProgrammeSchedule > " + programme.id + ":" + programme.name + " has " +
+          programme.schedule.length + " weeks");
         var dayElements = $(this).find("tr.tr2");
         if(dayElements !== null && dayElements.length > 0) {
           var days = [];
@@ -92,10 +93,34 @@ Scraper = (function () {
           week.year = parseYear(weekStr);
           dayElements.each(function(i, elem) {
             var activity = {courses : [], rooms: [], lecturer: "", notice: "", start: "", end: ""};
+            activity.courses = parseCourses(sanitize($(this).children().eq(3).text()));
+            activity.rooms = parseRooms(sanitize($(this).children().eq(4).text()));
+            activity.lecturer = sanitize($(this).children().eq(5).text());
+            activity.notice = sanitize($(this).children().eq(6).text());
+            var dateStr = sanitize($(this).children().eq(1).text());
+            var timeStr = sanitize($(this).children().eq(2).text());
+            var dates = parseTimespan(week.year, dateStr, timeStr);
+            activity.start = dates.start;
+            activity.end = dates.end;
+            var exists = [];
+            for(var n = 0; n < days.length; n++) {
+              var dayDate = days[n].date.getDate() + "." + days[n].date.getMonth();
+              if(dayDate == activity.start.getDate() + "." + activity.start.getMonth()){
+                exists.push(days[n]);
+              }
+            }
+            if(exists.length === 0) {
+              var day = {date: activity.start, dayOfWeek : getDayOfWeek(activity.start), activities : []};
+              day.activities.push(activity);
+              days.push(day);
+            } else if (exists.length > 0) {
+              exists[0].activities.push(activity);
+            }
           });
+          week.days = days;
+          programme.schedule.push(week);
         }
       });
-
     }
   };
 
@@ -139,18 +164,46 @@ var parseRooms = function(str) {
 };
 
 var parseCourses = function(str) {
-  var re = /(([A-Z]{2}|[A-Z]{3})(-)?\d{3})/i;
-  match = re.exec(str);
-  var matches = [];
-  while (match !== null) {
-    // matched text: match[0]
-    // match start: match.index
-    // capturing group n: match[n]
-    matches.push(match);
-    match = re.exec(str);
-  }
+  var matches = str.match(/([A-Z]{2,3}-?\d{2,3})/ig);
+  return matches;
 };
 
-var parseTimespan = function(str) {
+var parseTimespan = function(year, date, str) {
+  var res = {start : "", end : ""};
+  var times = str.split('-');
+  if(times.length != 2) return undefined;
+  var startStr = times[0];
+  var endStr = times[1];
 
+  var hoursStart = startStr.split('.')[0];
+  var minutesStart = startStr.split('.')[1];
+  hoursStart = hoursStart.length == 1 ? "0" + hoursStart : hoursStart;
+  minutesStart = minutesStart.length == 1 ? "0" + minutesStart : minutesStart;
+  var start = new Date(date + " " + year + " " + hoursStart + ":" + minutesStart + ":00");
+  if(start !== null && start !== undefined && !isNaN(start)) {
+    res.start = start;
+  }
+
+  var hoursEnd = endStr.split('.')[0];
+  var minutesEnd = endStr.split('.')[1];
+  hoursEnd = hoursEnd.length == 1 ? "0" + hoursEnd : hoursEnd;
+  minutesEnd = minutesEnd.length == 1 ? "0" + minutesEnd : minutesEnd;
+  var end = new Date(date.toString() + " " + year + " " + hoursEnd + ":" + minutesEnd + ":00");
+  if(end !== null && end !== undefined && !isNaN(end)) {
+    res.end = end;
+  }
+  return res;
+};
+
+var getDayOfWeek = function(date) {
+  var weekday = new Array(7);
+  weekday[0]=  "Sunday";
+  weekday[1] = "Monday";
+  weekday[2] = "Tuesday";
+  weekday[3] = "Wednesday";
+  weekday[4] = "Thursday";
+  weekday[5] = "Friday";
+  weekday[6] = "Saturday";
+  var dayNum = date.getDay();
+  return weekday[dayNum];
 };

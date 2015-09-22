@@ -2,6 +2,11 @@ Meteor.startup(function () {
 
   var scraper = new Scraper();
 
+  var millisecondsToWait = 2000;
+  setTimeout(function() {
+      scraper.scrape("#SPLUS83F11B");
+  }, millisecondsToWait);
+
   SyncedCron.add({
     name: 'Gather programmes & schedules',
     schedule: function(parser) {
@@ -10,10 +15,10 @@ Meteor.startup(function () {
     },
     job: function() {
 
-      scraper.scrape("#SPLUS18EC85");
+
     }
   });
 
-  SyncedCron.start();
+  //SyncedCron.start();
 
 });
